@@ -15,4 +15,5 @@ if(!configProject.success){
     throw new Error('Invalid configuration. Please check your.env.local file.')
 }
 
-export default configProject
+const envConfig =  configProject.data
+export default envConfig;
