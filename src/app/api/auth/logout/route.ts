@@ -20,7 +20,20 @@ export async function POST(request: Request) {
       accessToken,
       refreshToken,
     });
-
+    cookieStore.set("accessToken", '', {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      expires: new Date(0),
+    });
+    cookieStore.set("refreshToken", '', {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      expires: new Date(0),
+    });
     return Response.json(result);
   } catch (error) {
     return Response.json(
