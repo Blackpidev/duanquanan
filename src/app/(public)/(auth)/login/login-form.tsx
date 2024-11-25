@@ -30,9 +30,6 @@ export default function LoginForm() {
       toast({
         description: result.payload.message,
       });
-      const { accessToken, refreshToken } = result.payload.data;
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("accessToken", accessToken);
     } catch (error: any) {
       handleErrorApi({
         error,

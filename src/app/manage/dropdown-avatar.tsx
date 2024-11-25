@@ -10,6 +10,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useLogoutMutation } from '@/app/queries/useAuth'
+import { useRouter } from 'next/navigation'
+import { handleErrorApi } from '@/lib/utils'
 
 const account = {
   name: 'Nguyễn Văn A',
@@ -17,28 +20,47 @@ const account = {
 }
 
 export default function DropdownAvatar() {
+  const logoutMutation = useLogoutMutation()
+  const router = useRouter()
+  const LogoutSubmit = async () => {
+    if (logoutMutation.isPending) return
+    try {
+      await logoutMutation.mutateAsync()
+      router.push('/login')
+    } catch (error) {
+      handleErrorApi({
+        error
+      })
+    }
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' size='icon' className='overflow-hidden rounded-full'>
+        <Button
+          variant="outline"
+          size="icon"
+          className="overflow-hidden rounded-full"
+        >
           <Avatar>
             <AvatarImage src={account.avatar ?? undefined} alt={account.name} />
-            <AvatarFallback>{account.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {account.name.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel>{account.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href={'/manage/setting'} className='cursor-pointer'>
+          <Link href={"/manage/setting"} className="cursor-pointer">
             Cài đặt
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>Hỗ trợ</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+        <DropdownMenuItem onClick={LogoutSubmit}>Đăng xuất</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
