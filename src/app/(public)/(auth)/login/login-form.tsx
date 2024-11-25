@@ -26,10 +26,13 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginBodyType) => {
     if (loginMutation.isPending) return
     try {
-      const result = await loginMutation.mutateAsync(data)
+      const result = await loginMutation.mutateAsync(data);
       toast({
-        description: result.payload.message
+        description: result.payload.message,
       });
+      const { accessToken, refreshToken } = result.payload.data;
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("accessToken", accessToken);
     } catch (error: any) {
       handleErrorApi({
         error,

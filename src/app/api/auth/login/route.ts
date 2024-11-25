@@ -28,7 +28,8 @@ export async function POST(request: Request) {
       secure: true,
       expires: decodeRefreshToken.exp * 1000
     });
-    console.log(payload)
+    // localStorage.setItem("refreshToken", refreshToken);
+    // localStorage.setItem("accessToken", accessToken);
     return Response.json(payload);
   } catch (error) {
     if (error instanceof HttpError){
