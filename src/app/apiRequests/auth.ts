@@ -1,7 +1,7 @@
 import http from "@/lib/http";
 import { LoginBodyType, LoginResType } from "@/schemaValidations/auth.schema";
 
-const authapiRequest = {
+const authApiRequest = {
   sLogin: (body: LoginBodyType) =>
     http.post<LoginResType>("/auth/login", body),
 
@@ -12,4 +12,4 @@ const authapiRequest = {
     }),
 };
 
-export default authapiRequest;
+export default authApiRequest;
