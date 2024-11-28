@@ -1,8 +1,13 @@
-import http from "@/lib/http"
-import { AccountResType } from "@/schemaValidations/account.schema";
+import http from "@/lib/http";
+import {
+  AccountResType,
+  UpdateMeBodyType,
+} from "@/schemaValidations/account.schema";
 
-const apiAccountProfile = {
-  me: () => http.get <AccountResType>("/accounts/me"),
+const apiAccountRequest = {
+  me: () => http.get<AccountResType>("/accounts/me"),
+  updateMe: (body: UpdateMeBodyType) =>
+    http.put<AccountResType>("/accounts/me", body),
 };
 
-export default apiAccountProfile
+export default apiAccountRequest;

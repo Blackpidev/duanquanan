@@ -1,7 +1,7 @@
 import { mediaApiRequest } from "@/app/apiRequests/media";
 import { useMutation } from "@tanstack/react-query";
 
-export const useupdateMediaMutation = () => {
+export const useUploadMediaMutation = () => {
   return useMutation({
     mutationFn: mediaApiRequest.upload,
   });

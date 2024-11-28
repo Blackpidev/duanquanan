@@ -13,12 +13,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAccountProfile } from "@/app/queries/useAccount";
+import { useAccountMe, useUpdateMeMutation } from "@/app/queries/useAccount";
+import { useUploadMediaMutation } from "@/app/queries/useMedia";
+import { toast } from "@/hooks/use-toast";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const { data } = useAccountProfile();
+  const { data, refetch } = useAccountMe();
+  const updateMeMutation = useUpdateMeMutation();
+  const uploadMediaMutation = useUploadMediaMutation();
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
     defaultValues: {
@@ -44,11 +49,48 @@ export default function UpdateProfileForm() {
     }
     return avatar;
   }, [avatar, file]);
+
+  const reset = () => {
+    form.reset();
+    setFile(null);
+  };
+
+  const onSubmit = async (values: UpdateMeBodyType) => {
+    if (updateMeMutation.isPending) return;
+    try {
+      let body = values;
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult = await uploadMediaMutation.mutateAsync(
+          formData
+        );
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...values,
+          avatar: imageUrl,
+        };
+      }
+      const result = await updateMeMutation.mutateAsync(body);
+      toast({
+        description: result.payload.message,
+      });
+      refetch();
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
+    }
+  };
   return (
     <Form {...form}>
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onSubmit={form.handleSubmit(onSubmit, (e) => {
+          console.log(e);
+        })}
       >
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
@@ -73,10 +115,13 @@ export default function UpdateProfileForm() {
                         accept="image/*"
                         className="hidden"
                         ref={avatarInputRef}
-                        onChange={(e)=>{
-                          const file = e.target.files?.[0]
-                          if (file){
-                            setFile(file)
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setFile(file);
+                            field.onChange(
+                              "http://localhost:3000/" + field.name
+                            );
                           }
                         }}
                       />
