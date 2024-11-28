@@ -91,6 +91,7 @@ export default function UpdateProfileForm() {
         onSubmit={form.handleSubmit(onSubmit, (e) => {
           console.log(e);
         })}
+        onReset={reset}
       >
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
