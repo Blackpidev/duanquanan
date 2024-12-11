@@ -1,10 +1,11 @@
 import authapiRequest from "@/app/apiRequests/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { RefreshTokenBodyType } from "@/schemaValidations/auth.schema";
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
-  const refreshToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
   if (!refreshToken) {
     return Response.json(
       {
@@ -16,9 +17,11 @@ export async function POST(request: Request) {
     );
   }
   try {
+    // const body = (await request.json()) as RefreshTokenBodyType;
     const { payload } = await authapiRequest.sRefreshToken({
-      refreshToken,
+        refreshToken
     });
+    console.log("payload: ", payload);
     const decodeAccessToken = jwt.decode(payload.data.accessToken) as {
       exp: number;
     };
