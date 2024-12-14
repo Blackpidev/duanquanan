@@ -78,12 +78,12 @@ export const checkAndRefreshToken = async (param?: {
     exp: number;
     iat: number;
   };
-  const now = Math.round(new Date().getTime() / 1000);
+  const now = new Date().getTime() / 1000 - 1;
   // trường hợp refreshToken hết hạng thì ko xử lý nữa
   if (decodeRefreshToken.exp <= now) {
     removeTokensFromLocalStorage();
     return param?.onError && param.onError();
-  };
+  }
   // ví dụ trường hợp accessToken có thời gian là 10s
   // thì mình kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refreshToken chạy
   // thời gian còn lại sẽ tính theo công thức: decodeAccessToken.exp - decodeAccessToken.iat
