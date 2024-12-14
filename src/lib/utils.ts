@@ -1,22 +1,21 @@
 import { toast } from "@/hooks/use-toast";
 import { EntityError } from "@/lib/http";
-import { clsx, type ClassValue } from "clsx"
+import { clsx, type ClassValue } from "clsx";
 import { UseFormSetError } from "react-hook-form";
-import { twMerge } from "tailwind-merge"
+import { twMerge } from "tailwind-merge";
 import jwt from "jsonwebtoken";
 import authApiRequest from "@/app/apiRequests/auth";
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 /*
 xoá đi kí tự đầu tiên của path
 */
 
 export const normalizePath = (path: string) => {
-  return path.startsWith('/') ? path.slice(1) : path;
-}
+  return path.startsWith("/") ? path.slice(1) : path;
+};
 
 export const handleErrorApi = ({
   error,
@@ -44,20 +43,25 @@ export const handleErrorApi = ({
   }
 };
 
-const isBrowser = typeof window !== "undefined"
-export const getAccessTokenFromLocalStorage = () => isBrowser ? localStorage.getItem("accessToken") : null
+const isBrowser = typeof window !== "undefined";
+export const getAccessTokenFromLocalStorage = () =>
+  isBrowser ? localStorage.getItem("accessToken") : null;
 export const getRefreshTokenFromLocalStorage = () =>
   isBrowser ? localStorage.getItem("refreshToken") : null;
 
 export const setAccessTokenToLocalStorage = (value: string) =>
-  isBrowser && localStorage.setItem("accessToken", value)
+  isBrowser && localStorage.setItem("accessToken", value);
 export const setRefreshTokenToLocalStorage = (value: string) =>
-  isBrowser && localStorage.setItem("refreshToken", value)
+  isBrowser && localStorage.setItem("refreshToken", value);
 
+export const removeTokensFromLocalStorage = () => {
+  isBrowser && localStorage.removeItem("accessToken");
+  isBrowser && localStorage.removeItem("refreshToken");
+};
 
 export const checkAndRefreshToken = async (param?: {
-  onError?: () => void
-  onSuccess?: () => void
+  onError?: () => void;
+  onSuccess?: () => void;
 }) => {
   // không nên đưa logic lấy accesstoken và refreshtoken ra khỏi function này "checkAndRefreshToken"
   // vì để mỗi lần mà checkAndRefreshToken() được gọi thì chúng ta sẽ có accesstoken và refreshtoken mới
@@ -76,7 +80,10 @@ export const checkAndRefreshToken = async (param?: {
   };
   const now = Math.round(new Date().getTime() / 1000);
   // trường hợp refreshToken hết hạng thì ko xử lý nữa
-  if (decodeRefreshToken.exp <= now) return;
+  if (decodeRefreshToken.exp <= now) {
+    removeTokensFromLocalStorage();
+    return param?.onError && param.onError();
+  };
   // ví dụ trường hợp accessToken có thời gian là 10s
   // thì mình kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refreshToken chạy
   // thời gian còn lại sẽ tính theo công thức: decodeAccessToken.exp - decodeAccessToken.iat
@@ -88,9 +95,9 @@ export const checkAndRefreshToken = async (param?: {
       const res = await authApiRequest.refreshToken();
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
-      param?.onSuccess && param.onSuccess()
+      return param?.onSuccess && param.onSuccess();
     } catch (error) {
-      param?.onError && param.onError();
+      return param?.onError && param.onError();
     }
   }
-}
+};
