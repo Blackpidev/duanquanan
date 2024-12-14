@@ -3,7 +3,8 @@ import { EntityError } from "@/lib/http";
 import { clsx, type ClassValue } from "clsx"
 import { UseFormSetError } from "react-hook-form";
 import { twMerge } from "tailwind-merge"
-
+import jwt from "jsonwebtoken";
+import authApiRequest from "@/app/apiRequests/auth";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -52,3 +53,44 @@ export const setAccessTokenToLocalStorage = (value: string) =>
   isBrowser && localStorage.setItem("accessToken", value)
 export const setRefreshTokenToLocalStorage = (value: string) =>
   isBrowser && localStorage.setItem("refreshToken", value)
+
+
+export const checkAndRefreshToken = async (param?: {
+  onError?: () => void
+  onSuccess?: () => void
+}) => {
+  // không nên đưa logic lấy accesstoken và refreshtoken ra khỏi function này "checkAndRefreshToken"
+  // vì để mỗi lần mà checkAndRefreshToken() được gọi thì chúng ta sẽ có accesstoken và refreshtoken mới
+  //   tránh hiện tượng bug chạy accesstoken và refreshtoken cũ
+  const accessToken = getAccessTokenFromLocalStorage();
+  const refreshToken = getRefreshTokenFromLocalStorage();
+  // chưa đăng nhập thì không cho chạy
+  if (!accessToken || !refreshToken) return;
+  const decodeAccessToken = jwt.decode(accessToken) as {
+    exp: number;
+    iat: number;
+  };
+  const decodeRefreshToken = jwt.decode(refreshToken) as {
+    exp: number;
+    iat: number;
+  };
+  const now = Math.round(new Date().getTime() / 1000);
+  // trường hợp refreshToken hết hạng thì ko xử lý nữa
+  if (decodeRefreshToken.exp <= now) return;
+  // ví dụ trường hợp accessToken có thời gian là 10s
+  // thì mình kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refreshToken chạy
+  // thời gian còn lại sẽ tính theo công thức: decodeAccessToken.exp - decodeAccessToken.iat
+  if (
+    decodeAccessToken.exp - now <
+    (decodeAccessToken.exp - decodeAccessToken.iat) / 3
+  ) {
+    try {
+      const res = await authApiRequest.refreshToken();
+      setAccessTokenToLocalStorage(res.payload.data.accessToken);
+      setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
+      param?.onSuccess && param.onSuccess()
+    } catch (error) {
+      param?.onError && param.onError();
+    }
+  }
+}

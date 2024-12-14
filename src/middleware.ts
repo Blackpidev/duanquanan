@@ -14,9 +14,14 @@ export function middleware(request: NextRequest) {
   if (unAuthPaths.some((path) => pathname.startsWith(path)) && refreshToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }
-  if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken && refreshToken) {
-    const url = new URL("/logout", request.url);
-    url.searchParams.set('refreshToken', refreshToken)
+  if (
+    privatePaths.some((path) => pathname.startsWith(path)) &&
+    !accessToken &&
+    refreshToken
+  ) {
+    const url = new URL("/refresh-token", request.url);
+    url.searchParams.set("refreshToken", refreshToken);
+    url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
