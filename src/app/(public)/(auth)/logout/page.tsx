@@ -1,5 +1,6 @@
 "use client";
 import { useLogoutMutation } from "@/app/queries/useAuth";
+import { useAppContext } from "@/components/app-provider";
 import {
   getAccessTokenFromLocalStorage,
   getRefreshTokenFromLocalStorage,
@@ -9,6 +10,7 @@ import { useEffect, useRef } from "react";
 
 export default function LogoutPage() {
   const { mutateAsync } = useLogoutMutation();
+  const { setIsAuth } = useAppContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const refreshTokenFormUrl = searchParams.get("refreshToken");
@@ -16,8 +18,8 @@ export default function LogoutPage() {
   const ref = useRef<any>(null);
   useEffect(() => {
     if (
-      ref.current &&
-      refreshTokenFormUrl === getRefreshTokenFromLocalStorage() ||
+      (ref.current &&
+        refreshTokenFormUrl === getRefreshTokenFromLocalStorage()) ||
       (accessTokenFormUrl &&
         accessTokenFormUrl === getAccessTokenFromLocalStorage())
     ) {
@@ -26,12 +28,13 @@ export default function LogoutPage() {
         setTimeout(() => {
           ref.current = null;
         }, 1000);
+        setIsAuth(false);
         router.push("/login");
       });
-    } else{
+    } else {
       router.push("/");
     }
-  }, [mutateAsync, router, refreshTokenFormUrl, accessTokenFormUrl]);
+  }, [mutateAsync, router, refreshTokenFormUrl, accessTokenFormUrl, setIsAuth]);
 
   return <div>Log out....</div>;
 }
