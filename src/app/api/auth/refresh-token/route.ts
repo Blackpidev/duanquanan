@@ -1,7 +1,6 @@
 import authapiRequest from "@/app/apiRequests/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import { RefreshTokenBodyType } from "@/schemaValidations/auth.schema";
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
