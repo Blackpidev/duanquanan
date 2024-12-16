@@ -1,5 +1,6 @@
 import apiAccountRequest from "@/app/apiRequests/account";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { UpdateEmployeeAccountBodyType } from "@/schemaValidations/account.schema";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useAccountMe = () => {
   return useQuery({
@@ -16,7 +17,60 @@ export const useUpdateMeMutation = () => {
 
 export const useChangePasswordMutation = () => {
   return useMutation({
-    mutationFn: apiAccountRequest.changePasswordV2
+    mutationFn: apiAccountRequest.changePasswordV2,
   });
+};
 
-}
+export const useGetAccountList = () => {
+  return useQuery({
+    queryKey: ["accounts"],
+    queryFn: apiAccountRequest.list,
+  });
+};
+
+export const useGetAccount = (id: number) => {
+  return useQuery({
+    queryKey: ["accounts", id],
+    queryFn: () => apiAccountRequest.getEmployee(id),
+  });
+};
+
+export const useAddAccountMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: apiAccountRequest.addEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["accounts"],
+      });
+    },
+  });
+};
+
+export const useUpdateAccountMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...body
+    }: UpdateEmployeeAccountBodyType & { id: number }) =>
+      apiAccountRequest.updateEmployee(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["accounts"],
+      });
+    },
+  });
+};
+
+export const useDeleteAccountMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: apiAccountRequest.deleteEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["accounts"],
+      });
+    },
+  });
+};
