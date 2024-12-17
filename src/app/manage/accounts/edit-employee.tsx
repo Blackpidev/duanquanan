@@ -106,7 +106,7 @@ export default function EditEmployee({
         description: result.payload.message,
       });
       onSubmitSuccess && onSubmitSuccess();
-      setId(undefined);
+      reset()
     } catch (error) {
       handleErrorApi({
         error,
@@ -114,12 +114,17 @@ export default function EditEmployee({
       });
     }
   };
+
+  const reset = () => {
+    setId(undefined);
+    setFile(null);
+  }
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          setId(undefined);
+          reset();
         }
       }}
     >
