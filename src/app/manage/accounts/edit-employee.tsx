@@ -45,7 +45,7 @@ export default function EditEmployee({
     id: id as number,
     enabled: Boolean(id),
   });
-  const updataAccountMutation = useUpdateAccountMutation();
+  const updateAccountMutation = useUpdateAccountMutation();
   const uploadMediaMuation = useUploadMediaMutation();
 
   const form = useForm<UpdateEmployeeAccountBodyType>({
@@ -83,7 +83,7 @@ export default function EditEmployee({
     }
   }, [data, form]);
   const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
-    if (updataAccountMutation.isPending) return;
+    if (updateAccountMutation.isPending) return;
     try {
       let body: UpdateEmployeeAccountBodyType & { id: number } = {
         id: id as number,
@@ -101,7 +101,7 @@ export default function EditEmployee({
           avatar: imageUrl,
         };
       }
-      const result = await updataAccountMutation.mutateAsync(body);
+      const result = await updateAccountMutation.mutateAsync(body);
       toast({
         description: result.payload.message,
       });

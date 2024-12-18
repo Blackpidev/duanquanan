@@ -11,7 +11,7 @@ const apiDishRequest = {
   addDish: (body: CreateDishBodyType) => http.post<DishResType>("dishes", body),
   updateDish: (id: number, body: UpdateDishBodyType) =>
     http.put<DishResType>(`dishes/${id}`, body),
-  getDish: (id: number) => http.get<DishResType>(`dishes${id}`),
+  getDish: (id: number) => http.get<DishResType>(`dishes/${id}`),
   deleteDish: (id: number) => http.delete<DishResType>(`dishes/${id}`),
 };
 
