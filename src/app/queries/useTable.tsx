@@ -2,7 +2,7 @@ import apiTableRequest from "@/app/apiRequests/table";
 import { UpdateTableBodyType } from "@/schemaValidations/table.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useTableQuery = () => {
+export const useListTableQuery = () => {
   return useQuery({
     queryKey: ["tables"],
     queryFn: apiTableRequest.list,

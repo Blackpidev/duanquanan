@@ -36,12 +36,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { getVietnameseTableStatus } from '@/lib/utils'
+import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
+import { useListTableQuery } from '@/app/queries/useTable'
+import QRcodeTable from '@/components/qrcode-table'
 
 type TableItem = TableListResType['data'][0]
 
@@ -59,56 +61,70 @@ const TableTableContext = createContext<{
 
 export const columns: ColumnDef<TableItem>[] = [
   {
-    accessorKey: 'number',
-    header: 'Số bàn',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('number')}</div>
+    accessorKey: "number",
+    header: "Số bàn",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("number")}</div>
+    ),
   },
   {
-    accessorKey: 'capacity',
-    header: 'Sức chứa',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('capacity')}</div>
+    accessorKey: "capacity",
+    header: "Sức chứa",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("capacity")}</div>
+    ),
   },
   {
-    accessorKey: 'status',
-    header: 'Trạng thái',
-    cell: ({ row }) => <div>{getVietnameseTableStatus(row.getValue('status'))}</div>
+    accessorKey: "status",
+    header: "Trạng thái",
+    cell: ({ row }) => (
+      <div>{getVietnameseTableStatus(row.getValue("status"))}</div>
+    ),
   },
   {
-    accessorKey: 'token',
-    header: 'QR Code',
-    cell: ({ row }) => <div>{row.getValue('number')}</div>
+    accessorKey: "token",
+    header: "QR Code",
+    cell: ({ row }) => (
+      <div>
+        <QRcodeTable token = {row.getValue("token")} tableNumber = {row.getValue("number")}/>
+        {/* {getTableLink({
+        token: row.getValue("token"),
+          tableNumber: row.getValue("number"),
+        })} */}
+      </div>
+    ),
   },
   {
-    id: 'actions',
+    id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setTableIdEdit, setTableDelete } = useContext(TableTableContext)
+      const { setTableIdEdit, setTableDelete } = useContext(TableTableContext);
       const openEditTable = () => {
-        setTableIdEdit(row.original.number)
-      }
+        setTableIdEdit(row.original.number);
+      };
 
       const openDeleteTable = () => {
-        setTableDelete(row.original)
-      }
+        setTableDelete(row.original);
+      };
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
-              <span className='sr-only'>Open menu</span>
-              <DotsHorizontalIcon className='h-4 w-4' />
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={openEditTable}>Sửa</DropdownMenuItem>
             <DropdownMenuItem onClick={openDeleteTable}>Xóa</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
-    }
-  }
-]
+      );
+    },
+  },
+];
 
 function AlertDialogDeleteTable({
   tableDelete,
@@ -151,7 +167,8 @@ export default function TableTable() {
   // const params = Object.fromEntries(searchParam.entries())
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>()
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null)
-  const data: any[] = []
+  const listTableQuery = useListTableQuery();
+  const data = listTableQuery.data?.payload.data ?? [];
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
