@@ -36,14 +36,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
+import { getTableLink, getVietnameseTableStatus, handleErrorApi } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
-import { useListTableQuery } from '@/app/queries/useTable'
+import { useDeleteTableMutation, useListTableQuery } from '@/app/queries/useTable'
 import QRcodeTable from '@/components/qrcode-table'
+import { toast } from '@/hooks/use-toast'
 
 type TableItem = TableListResType['data'][0]
 
@@ -66,6 +67,10 @@ export const columns: ColumnDef<TableItem>[] = [
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("number")}</div>
     ),
+    filterFn: (rows, columnId, filterValue) => {
+      if(!filterValue) return true
+      return String(filterValue) === String(rows.getValue("number"))
+    }
   },
   {
     accessorKey: "capacity",
@@ -133,12 +138,28 @@ function AlertDialogDeleteTable({
   tableDelete: TableItem | null
   setTableDelete: (value: TableItem | null) => void
 }) {
+  const { mutateAsync } = useDeleteTableMutation();
+  const deleteDishes = async () => {
+    if (tableDelete) {
+      try {
+        const result = await mutateAsync(tableDelete.number);
+        setTableDelete(null);
+        toast({
+          description: result.payload.message,
+        });
+      } catch (error) {
+        handleErrorApi({
+          error,
+        });
+      }
+    }
+  }; 
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setTableDelete(null)
+          setTableDelete(null);
         }
       }}
     >
@@ -146,17 +167,20 @@ function AlertDialogDeleteTable({
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bàn <span className='bg-foreground text-primary-foreground rounded px-1'>{tableDelete?.number}</span> sẽ bị
-            xóa vĩnh viễn
+            Bàn{" "}
+            <span className="bg-foreground text-primary-foreground rounded px-1">
+              {tableDelete?.number}
+            </span>{" "}
+            sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={deleteDishes}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
 // Số lượng item trên 1 trang
 const PAGE_SIZE = 10
