@@ -40,6 +40,7 @@ import { useAddDishMutation } from "@/app/queries/useDish";
 import { useUploadMediaMutation } from "@/app/queries/useMedia";
 import { useAddAccountMutation } from "@/app/queries/useAccount";
 import { toast } from "@/hooks/use-toast";
+import revalidateApiRequest from "@/app/apiRequests/revalidate";
 
 export default function AddDish() {
   const [file, setFile] = useState<File | null>(null);
@@ -88,6 +89,7 @@ export default function AddDish() {
         };
       }
       const result = await addDishMutation.mutateAsync(body);
+      await revalidateApiRequest("dishes");
       toast({
         description: result.payload.message,
       });

@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGetDishQuery, useUpdateDishMutation } from "@/app/queries/useDish";
 import { useUploadMediaMutation } from "@/app/queries/useMedia";
 import { toast } from "@/hooks/use-toast";
+import revalidateApiRequest from "@/app/apiRequests/revalidate";
 
 export default function EditDish({
   id,
@@ -112,6 +113,8 @@ export default function EditDish({
         };
       }
       const result = await updateDishesMutation.mutateAsync(body);
+      await revalidateApiRequest("dishes");
+
       toast({
         description: result.payload.message,
       });
