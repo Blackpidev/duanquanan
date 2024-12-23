@@ -9,7 +9,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getAccessTokenFromLocalStorage, removeTokensFromLocalStorage } from "@/lib/utils";
+import { decodeToken, getAccessTokenFromLocalStorage, removeTokensFromLocalStorage } from "@/lib/utils";
+import { RoleType } from "@/types/jwt.types";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +23,8 @@ const queryClient = new QueryClient({
 
 const AppContext = createContext({
   isAuth: false,
-  setIsAuth: (isAuth: boolean) => {},
+  role: undefined as RoleType | undefined,
+  setRole: (role?: RoleType | undefined) => {},
 });
 export const useAppContext = () => {
   return useContext(AppContext);
@@ -33,29 +35,29 @@ export default function AppProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isAuth, setIsAuthState] = useState(false);
+  const [role, setRoleState] = useState<RoleType | undefined>();
   useEffect(() => {
     const accessToken = getAccessTokenFromLocalStorage();
     if (accessToken) {
-      setIsAuthState(true);
+      const role = decodeToken(accessToken).role;
+      setRoleState(role);
     }
   }, []);
 
-  const setIsAuth = useCallback((isAuth: boolean) => {
-    if (isAuth) {
-      setIsAuthState(true);
-    }else {
-      setIsAuthState(false);
-      removeTokensFromLocalStorage()
+  const setRole = useCallback((role?: RoleType | undefined) => {
+    setRoleState(role);
+    if (!role) {
+      removeTokensFromLocalStorage();
     }
   }, []);
+  const isAuth = Boolean(role);
   return (
-    <AppContext.Provider value={{ isAuth, setIsAuth }}>
-    <QueryClientProvider client={queryClient}>
-      {children}
-      <RefreshToken />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <AppContext.Provider value={{ role, setRole, isAuth }}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <RefreshToken />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </AppContext.Provider>
   );
 }
