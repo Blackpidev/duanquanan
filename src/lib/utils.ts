@@ -5,9 +5,10 @@ import { UseFormSetError } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import jwt from "jsonwebtoken";
 import authApiRequest from "@/app/apiRequests/auth";
-import { DishStatus, OrderStatus, TableStatus } from "@/constants/type";
+import { DishStatus, OrderStatus, Role, TableStatus } from "@/constants/type";
 import envConfig from "@/config";
 import { TokenPayload } from "@/types/jwt.types";
+import guestApiRequest from "@/app/apiRequests/guest";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -73,14 +74,8 @@ export const checkAndRefreshToken = async (param?: {
   const refreshToken = getRefreshTokenFromLocalStorage();
   // chưa đăng nhập thì không cho chạy
   if (!accessToken || !refreshToken) return;
-  const decodeAccessToken = decodeToken(accessToken) as {
-    exp: number;
-    iat: number;
-  };
-  const decodeRefreshToken = decodeToken(refreshToken) as {
-    exp: number;
-    iat: number;
-  };
+  const decodeAccessToken = decodeToken(accessToken);
+  const decodeRefreshToken = decodeToken(refreshToken);
   const now = new Date().getTime() / 1000 - 1;
   // trường hợp refreshToken hết hạng thì ko xử lý nữa
   if (decodeRefreshToken.exp <= now) {
@@ -95,7 +90,12 @@ export const checkAndRefreshToken = async (param?: {
     (decodeAccessToken.exp - decodeAccessToken.iat) / 3
   ) {
     try {
-      const res = await authApiRequest.refreshToken();
+      const role = decodeRefreshToken.role;
+      const res =
+        role === Role.Guest
+          ? await guestApiRequest.refreshToken()
+          : await authApiRequest.refreshToken();
+
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
       return param?.onSuccess && param.onSuccess();
@@ -104,8 +104,6 @@ export const checkAndRefreshToken = async (param?: {
     }
   }
 };
-
-
 
 export const formatCurrency = (number: number) => {
   return new Intl.NumberFormat("vi-VN", {
@@ -169,7 +167,6 @@ export const getTableLink = ({
   );
 };
 
-
-export const  decodeToken = (token: string) => {
+export const decodeToken = (token: string) => {
   return jwt.decode(token) as TokenPayload;
-}
+};
