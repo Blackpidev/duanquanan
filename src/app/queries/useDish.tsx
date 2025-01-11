@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const useDishListQuery = () => {
   return useQuery({
     queryKey: ["dishes"],
-    queryFn: apiDishRequest.list,
+    queryFn: apiDishRequest.list
   });
 };
 

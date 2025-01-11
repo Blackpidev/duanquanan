@@ -15,8 +15,7 @@ import { RoleType } from "@/types/jwt.types";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      refetchOnWindowFocus: false
     },
   },
 });

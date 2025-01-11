@@ -9,6 +9,10 @@ const nextConfig = {
         pathname: "/**",
         search: "",
       },
+      {
+        hostname: "via.placeholder.com",
+        pathname: "/**",
+      }
     ],
   },
 };
